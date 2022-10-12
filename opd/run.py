@@ -150,6 +150,7 @@ class Handler(Callbacks):
     def __init__(self):
         Callbacks.__init__(self)
         self.queue = queue.Queue()
+        self.stopped = threading.Event()
         self.register("event", handle)
         Bus.add(self)
 
@@ -164,7 +165,7 @@ class Handler(Callbacks):
         self.dispatch(event)
 
     def loop(self):
-        while 1:
+        while not self.stopped.set():
             self.handle(self.poll())
 
     def poll(self):
@@ -176,10 +177,18 @@ class Handler(Callbacks):
     def raw(self, txt):
         pass
 
+    def restart(self):
+        self.stop()
+        self.start()
+
     def say(self, channel, txt):
         self.raw(txt)
 
+    def stop(self):
+        self.stopped.set()
+
     def start(self):
+        self.stopped.clear()
         launch(self.loop)
 
     @staticmethod

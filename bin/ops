@@ -17,26 +17,15 @@ import time
 sys.path.insert(0, os.getcwd())
 
 
-from op import Wd, launch
-from op.run import Event, Handler, Shell, scan, scandir
+from opd import Wd, launch
+from opd import Event, Handler, Shell, printable, scan, scandir
+from opd import cmds
 
 
-from opm import cmds
-
-
-Wd.workdir = os.path.expanduser("~/.op")
+Wd.workdir = os.path.expanduser("~/.opd")
 
 
 starttime = time.time()
-
-class CLI(Handler):
-
-    def raw(self, txt):
-        print(txt)
-
-
-cli = CLI()
-
 
 
 class Shell(Handler):
@@ -66,6 +55,11 @@ class Shell(Handler):
 shl = Shell()
 
 
+def banner():
+    print("OPD shell started at %s" % time.ctime(time.time()).replace("  ", " "))
+    print(printable(irc.cfg))
+
+
 def importer(packagename, modulename):
     name = "%s.%s" % (packagename, modulename)
     try:
@@ -93,6 +87,7 @@ def wrap(func):
 
 
 def main():
+    banner()
     scandir("mod", importer)
     scan(shl, cmds)
     shl.start()
