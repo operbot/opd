@@ -26,6 +26,7 @@ from opd import edit, keys, launch, last, locked, printable, register, save
 from opd import Bus, Command, Event, Handler, Shell, command, scandir
 from opd import cmds, irc, rss
 
+
 from opd.irc import IRC
 from opd.rss import Fetcher
 

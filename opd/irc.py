@@ -62,7 +62,7 @@ class Config(Default):
     servermodes = ""
     sleep = 60
     username = "opd"
-    users = True
+    users = False
 
     def __init__(self):
         super().__init__()
@@ -83,7 +83,7 @@ class Config(Default):
 Class.add(Config)
 
 
-class IrcEvent(Event):
+class IEvent(Event):
 
     def __init__(self):
         Event.__init__(self)
@@ -94,7 +94,6 @@ class IrcEvent(Event):
         self.nick = ""
         self.origin = ""
         self.rawstr = ""
-        self.sock = None
         self.type = "event"
         self.txt = ""
 
@@ -368,6 +367,7 @@ class IRC(Handler, Output):
             self.command("NOTICE", event.channel, txt)
 
     def privmsg(self, event):
+        print(event)
         if event.txt:
             if event.txt[0] in [self.cfg.control, "!"]:
                 event.txt = event.txt[1:]
@@ -383,13 +383,14 @@ class IRC(Handler, Output):
             event.type = "event"
             event.orig = repr(self)
             event.parse()
-            self.handle(event)
+            print(event)
+            Command.handle(event)
 
     def parsing(self, txt):
         rawstr = str(txt)
         rawstr = rawstr.replace("\u0001", "")
         rawstr = rawstr.replace("\001", "")
-        obj = IrcEvent()
+        obj = IEvent()
         obj.rawstr = rawstr
         obj.command = ""
         obj.arguments = []
@@ -450,7 +451,7 @@ class IRC(Handler, Output):
             except (socket.timeout, ConnectionResetError) as ex:
                 self.joined.clear()
                 time.sleep(5.0)
-                evt = IrcEvent()
+                evt = IEvent()
                 evt.txt = str(ex)
                 evt.type = "ERROR"
                 evt.orig = repr(self)

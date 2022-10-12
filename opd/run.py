@@ -8,6 +8,7 @@
 import inspect
 import os
 import queue
+import sys
 import threading
 import traceback
 import time
@@ -21,15 +22,6 @@ from .thr import launch
 
 
 Cfg = Default()
-
-
-def handle(evt):
-    evt.parse()
-    func = getattr(Command.cmd, evt.cmd, None)
-    if func:
-        func(evt)
-        evt.show()
-    evt.ready()
 
 
 class Bus(Object):
@@ -97,39 +89,87 @@ class Command(Object):
         return getattr(Command.cmd, cmd, None)
 
     @staticmethod
+    def handle(evt):
+        if not evt.isparsed:
+            evt.parse()
+        func = getattr(Command.cmd, evt.cmd, None)
+        print(func)
+        if func:
+            func(evt)
+            evt.show()
+        evt.ready()
+
+    @staticmethod
     def remove(cmd):
         del Command.cmd[cmd]
 
 
-class Event(Default):
+class Parsed(Default):
 
     def __init__(self):
         Default.__init__(self)
-        self.__ready__ = threading.Event()
         self.args = []
-        self.result = []
+        self.gets = Default()
+        self.isparsed = False
         self.sets = Default()
-        self.type = "event"
+        self.toskip = Default()
+        self.txt = ""
 
-    def bot(self):
-        return Bus.byorig(self.orig)
+    def default(self, key, default=""):
+        register(self, key, default)
 
     def parse(self, txt=None):
-        if txt:
-            self.txt = txt
-        splitted = self.txt.split()
-        if splitted:
-            self.cmd = splitted[0]
-        if len(splitted) > 1:
-            self.args = splitted[1:]
-            self.rest = " ".join(self.args)
-        for word in splitted[1:]:
+        self.isparsed = True
+        self.otxt = txt or self.txt
+        spl = self.otxt.split()
+        args = []
+        _nr = -1
+        for word in spl:
+            if word.startswith("-"):
+                try:
+                    self.index = int(word[1:])
+                except ValueError:
+                    self.opts = self.opts + word[1:2]
+                continue
+            try:
+                key, value = word.split("==")
+                if value.endswith("-"):
+                    value = value[:-1]
+                    register(self.toskip, value, "")
+                register(self.gets, key, value)
+                continue
+            except ValueError:
+                pass
             try:
                 key, value = word.split("=")
                 register(self.sets, key, value)
                 continue
             except ValueError:
                 pass
+            _nr += 1
+            if _nr == 0:
+                self.cmd = word
+                continue
+            args.append(word)
+        if args:
+            self.args = args
+            self.rest = " ".join(args)
+            self.txt = self.cmd + " " + self.rest
+        else:
+            self.txt = self.cmd
+
+
+class Event(Parsed):
+
+    def __init__(self):
+        Parsed.__init__(self)
+        self.__ready__ = threading.Event()
+        self.control = "!"
+        self.result = []
+        self.type = "event"
+
+    def bot(self):
+        return Bus.byorig(self.orig)
 
     def ready(self):
         self.__ready__.set()
@@ -152,7 +192,7 @@ class Handler(Callbacks):
         self.queue = queue.Queue()
         self.stopped = threading.Event()
         self.stopped.clear()
-        self.register("event", handle)
+        self.register("event", Command.handle)
         Bus.add(self)
 
     @staticmethod
@@ -229,6 +269,14 @@ def from_exception(exc, txt="", sep=" "):
     for frm in traceback.extract_tb(exc.__traceback__):
         result.append("%s:%s" % (os.sep.join(frm.filename.split(os.sep)[-2:]), frm.lineno))
     return "%s %s: %s" % (" ".join(result), name(exc), exc, )
+
+
+def parse(txt):
+    prs = Parsed()
+    prs.parse(txt)
+    if "v" in prs.opts:
+        prs.verbose = True
+    return prs
 
 
 def scandir(path, func):

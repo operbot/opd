@@ -23,7 +23,7 @@ sys.path.insert(0, os.getcwd())
 
 from opd import Class, Default, Object, Wd
 from opd import edit, keys, launch, last, locked, printable, register, save
-from opd import Bus, Command, Event, Handler, Shell, command, scan, scandir
+from opd import Bus, Command, Event, Handler, Shell, command, scandir
 from opd import cmds, irc, rss
 
 from opd.irc import IRC
@@ -93,12 +93,13 @@ def main():
         return command(cli, " ".join(sys.argv[1:]))
     banner()
     irc.start()
-    scan(irc, cmds)
-    scan(irc, rss)
+    irc.scan(cmds)
+    irc.scan(rss)
     fetcher.start()
     shl.start()
-    scan(shl, cmds)
-    scan(shl, rss)
+    shl.scan(cmds)
+    shl.scan(rss)
+    print(Command.cmd)
     shl.wait()
 
 

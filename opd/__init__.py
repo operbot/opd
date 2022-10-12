@@ -39,7 +39,7 @@ great for giving objects peristence by having their state stored in files::
  >>> from op import Object, save
  >>> o = Object()
  >>> save(o)
- 'op.obj.Object/2021-08-31/15:31:05.717063'
+ 'opd.obj.Object/2021-08-31/15:31:05.717063'
 
 """
 
@@ -110,7 +110,6 @@ def __dir__():
             'printable',
             'register',
             'save',
-            'scan',
             'scandir',
             'setwd',
             'spl',
