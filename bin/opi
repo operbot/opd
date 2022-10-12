@@ -25,7 +25,6 @@ from opd import Class, Default, Object, Wd
 from opd import edit, keys, launch, last, locked, printable, register, save
 from opd import Bus, Command, Event, Handler, Shell, command, scandir
 from opd import cmds, irc, rss
-
 from opd.irc import IRC
 from opd.rss import Fetcher
 
@@ -67,15 +66,14 @@ class Shell(Handler):
 
 
 cli = CLI()
-shl = Shell()
 fetcher = Fetcher()
 irc = IRC()
+shl = Shell()
 
 
 def banner():
     print("OPD irc started at %s" % time.ctime(time.time()).replace("  ", " "))
     print(printable(irc.cfg, skip="password,username,realname"))
-
 
 
 def importer(packagename, modulename):
@@ -99,7 +97,6 @@ def main():
     shl.start()
     shl.scan(cmds)
     shl.scan(rss)
-    print(Command.cmd)
     shl.wait()
 
 

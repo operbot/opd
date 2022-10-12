@@ -59,7 +59,7 @@ def daemon(silent=False):
 
 
 def main():
-    #sys.argv[0] = "opd"
+    sys.argv[0] = "opd"
     banner()
     daemon()
     fetcher.start()
@@ -68,4 +68,5 @@ def main():
     bot.wait()
 
 
-main()
+if __name__ == "__main__":
+    main()

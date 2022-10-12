@@ -17,7 +17,7 @@ sys.path.insert(0, os.getcwd())
 
 from opd import Wd
 from opd import Bus, Event, Handler
-from opd import cmds, scan, scandir
+from opd import cmds, scandir
 from opd import irc, rss
 
 
@@ -40,7 +40,7 @@ def importer(packagename, modulename):
     name = "%s.%s" % (packagename, modulename)
     try:
         mod = importlib.import_module(name, packagename)
-        scan(cli, mod)
+        cli.scan(mod)
     except ModuleNotFoundError:
         pass
 

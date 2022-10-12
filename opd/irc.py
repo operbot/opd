@@ -367,7 +367,6 @@ class IRC(Handler, Output):
             self.command("NOTICE", event.channel, txt)
 
     def privmsg(self, event):
-        print(event)
         if event.txt:
             if event.txt[0] in [self.cfg.control, "!"]:
                 event.txt = event.txt[1:]
@@ -383,7 +382,6 @@ class IRC(Handler, Output):
             event.type = "event"
             event.orig = repr(self)
             event.parse()
-            print(event)
             Command.handle(event)
 
     def parsing(self, txt):

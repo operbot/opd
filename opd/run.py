@@ -92,8 +92,7 @@ class Command(Object):
     def handle(evt):
         if not evt.isparsed:
             evt.parse()
-        func = getattr(Command.cmd, evt.cmd, None)
-        print(func)
+        func = Command.get(evt.cmd)
         if func:
             func(evt)
             evt.show()
