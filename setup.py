@@ -21,8 +21,8 @@ setup(
     long_description=read(),
     long_description_content_type="text/x-rst",
     license="Public Domain",
-    packages=["opd", "opm"],
-    scripts=["bin/opd", "bin/opi"],
+    packages=["opd"],
+    scripts=["bin/opc", "bin/opd", "bin/opi", "bin/ops"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: Public Domain",

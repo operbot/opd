@@ -21,64 +21,50 @@ import _thread
 sys.path.insert(0, os.getcwd())
 
 
-from opd import Cfg, Class, Default, Object, Wd
+from opd import Class, Default, Object, Wd
 from opd import edit, keys, launch, last, locked, printable, register, save
 from opd import Bus, Command, Event, Handler, Shell, command, scan, scandir
+from opd import cmds, irc, rss
+
 from opd.irc import IRC
 from opd.rss import Fetcher
-from opd import cmds, rss
 
 
 Wd.workdir = os.path.expanduser("~/.opd")
 
 
-starttime = time.time()
-
-
-saylock = _thread.allocate_lock()
-
-
 fetcher = Fetcher()
-irc = IRC()
+bot = IRC()
 
 
 def banner():
-    print("OPD (operator daemon) started at %s" % time.ctime(time.time()).replace("  ", " "))
-    print(printable(irc.cfg, skip="password,username,realname"))
+    print("OPD daemon started at %s" % time.ctime(time.time()).replace("  ", " "))
+    print(printable(bot.cfg, skip="password,username,realname"))
 
 
-def daemon():
+def daemon(silent=False):
     pid = os.fork()
     if pid != 0:
         os._exit(0)
     os.setsid()
     os.umask(0)
-    sis = open("/dev/null", 'r')
-    sos = open("/dev/null", 'a+')
-    ses = open("/dev/null", 'a+')
-    os.dup2(sis.fileno(), sys.stdin.fileno())
-    os.dup2(sos.fileno(), sys.stdout.fileno())
-    os.dup2(ses.fileno(), sys.stderr.fileno())
-
-
-def importer(packagename, modulename):
-    name = "%s.%s" % (packagename, modulename)
-    try:
-        mod = importlib.import_module(name, packagename)
-        scan(irc, mod)
-    except ModuleNotFoundError:
-        pass
+    if silent:
+        sis = open("/dev/null", 'r')
+        sos = open("/dev/null", 'a+')
+        ses = open("/dev/null", 'a+')
+        os.dup2(sis.fileno(), sys.stdin.fileno())
+        os.dup2(sos.fileno(), sys.stdout.fileno())
+        os.dup2(ses.fileno(), sys.stderr.fileno())
 
 
 def main():
+    sys.argv[0] = "opd"
     banner()
     daemon()
-    scandir("mod", importer)
-    irc.start()
-    scan(irc, cmds)
-    scan(irc, rss)
     fetcher.start()
-    irc.wait()
+    scan(bot, cmds)
+    bot.start()
+    bot.wait()
 
 
 main()

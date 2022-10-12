@@ -73,7 +73,7 @@ irc = IRC()
 
 
 def banner():
-    print("OPD (operator daemon) started at %s" % time.ctime(time.time()).replace("  ", " "))
+    print("OPD irc started at %s" % time.ctime(time.time()).replace("  ", " "))
     print(printable(irc.cfg, skip="password,username,realname"))
 
 

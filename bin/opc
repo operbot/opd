@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116,C0413
 
 
-"operator daemon"
+"operator daemon console"
 
 
 import importlib

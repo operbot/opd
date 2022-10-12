@@ -151,6 +151,7 @@ class Handler(Callbacks):
         Callbacks.__init__(self)
         self.queue = queue.Queue()
         self.stopped = threading.Event()
+        self.stopped.clear()
         self.register("event", handle)
         Bus.add(self)
 
@@ -191,11 +192,10 @@ class Handler(Callbacks):
         self.stopped.clear()
         launch(self.loop)
 
-    @staticmethod
-    def wait():
-        while 1:
-            time.sleep(1.0)
-
+    def wait(self):
+        while self.stopped:
+            self.stopped.wait(1.0)
+        
 
 class Shell(Handler):
 

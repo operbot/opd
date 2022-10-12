@@ -62,7 +62,7 @@ class Config(Default):
     servermodes = ""
     sleep = 60
     username = "opd"
-    users = False
+    users = True
 
     def __init__(self):
         super().__init__()
@@ -310,6 +310,7 @@ class IRC(Handler, Output):
             self.state.errors.append(txt)
             nck = self.cfg.nick + "_" + str(random.randint(1,10))
             self.command("NICK", nck)
+        print(evt.txt)
         return evt
 
     def fileno(self):
@@ -520,7 +521,8 @@ class IRC(Handler, Output):
         launch(
                self.doconnect,
                self.cfg.server,
-               self.cfg.nick, int(self.cfg.port or "6667")
+               self.cfg.nick,
+               int(self.cfg.port or "6667")
               )
         if not self.keeprunning:
             launch(self.keep)
@@ -531,9 +533,6 @@ class IRC(Handler, Output):
         except OSError:
             pass
         Handler.stop(self)
-
-    def wait(self):
-        self.joined.wait()
 
 
 class Users(Object):

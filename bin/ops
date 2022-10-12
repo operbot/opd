@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116,R0201,C0413
 
 
-"object programming shell"
+"operator shell"
 
 
 import importlib
@@ -18,7 +18,7 @@ sys.path.insert(0, os.getcwd())
 
 
 from opd import Wd, launch
-from opd import Event, Handler, Shell, printable, scan, scandir
+from opd import Cfg, Event, Handler, Shell, printable, scan, scandir
 from opd import cmds
 
 
@@ -57,7 +57,8 @@ shl = Shell()
 
 def banner():
     print("OPD shell started at %s" % time.ctime(time.time()).replace("  ", " "))
-    print(printable(irc.cfg))
+    if Cfg:
+        print(printable(Cfg))
 
 
 def importer(packagename, modulename):
