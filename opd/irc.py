@@ -1,15 +1,17 @@
 # This file is placed in the Public Domain.
-# pylint: disable=C0115,C0116,R0201,C0413
+# pylint: disable=C0115,C0116,R0201,C0413,R0902,R0903,W0201,W0613
+# pylint: disable=R0912,R0915,R0904,W0221
 
 
 "irc"
 
 
-import importlib
+import base64
 import os
 import queue
-import readline
+import random
 import socket
+import ssl
 import sys
 import time
 import textwrap
@@ -21,8 +23,10 @@ sys.path.insert(0, os.getcwd())
 
 
 from opd import Class, Default, Object, Wd
-from opd import Bus, Command, Event, Handler, Shell
-from opd import command, keys, last, locked, printable, scan, scandir
+from opd import Command, Event, Handler, Shell
+from opd import keys, last, locked, printable
+from opd import edit, fntime, find, save, update
+from opd import elapsed, launch, register
 
 
 Wd.workdir = os.path.expanduser("~/.opd")
@@ -64,7 +68,7 @@ class Config(Default):
         super().__init__()
         self.control = Config.control
         self.channel = Config.channel
-        self.nick = Config.nick 
+        self.nick = Config.nick
         self.password = Config.password
         self.port = Config.port
         self.realname = Config.realname
@@ -184,7 +188,7 @@ class IRC(Handler, Output):
         self.speed = "slow"
         self.state = Object()
         self.state.needconnect = False
-        self.state.error = ""
+        self.state.errors = []
         self.state.last = 0
         self.state.lastline = ""
         self.state.nrconnect = 0
@@ -209,7 +213,7 @@ class IRC(Handler, Output):
 
     def auth(self, event):
         time.sleep(1.0)
-        self.raw("AUTHENTICATE %s" % bot.cfg.password)
+        self.raw("AUTHENTICATE %s" % self.cfg.password)
 
     def cap(self, event):
         time.sleep(1.0)
@@ -268,7 +272,7 @@ class IRC(Handler, Output):
                 if self.connect(server, port):
                     break
             except (OSError, ConnectionResetError) as ex:
-                self.state.error = str(ex)
+                self.state.errors.append(str(ex))
             time.sleep(self.cfg.sleep)
         self.logon(server, nck)
 
@@ -280,7 +284,7 @@ class IRC(Handler, Output):
 
     def error(self, event):
         self.state.nrerror += 1
-        self.state.error = event.txt
+        self.state.errors.append(event.txt)
         self.stop()
 
     def event(self, txt):
@@ -300,10 +304,10 @@ class IRC(Handler, Output):
         elif cmd == "002":
             self.state.host = evt.args[2][:-1]
         elif cmd == "366":
-            self.state.error = ""
+            self.state.errors = []
             self.joined.set()
         elif cmd == "433":
-            self.state.error = txt
+            self.state.errors.append(txt)
             nck = self.cfg.nick + "_" + str(random.randint(1,10))
             self.command("NICK", nck)
         return evt
@@ -313,7 +317,7 @@ class IRC(Handler, Output):
 
     def h903(self, event):
         time.sleep(1.0)
-        elf.raw("CAP END")
+        self.raw("CAP END")
 
     def h904(self, event):
         time.sleep(1.0)
@@ -379,7 +383,7 @@ class IRC(Handler, Output):
             event.type = "event"
             event.orig = repr(self)
             event.parse()
-            cli.handle(event)
+            self.handle(event)
 
     def parsing(self, txt):
         rawstr = str(txt)
@@ -469,7 +473,7 @@ class IRC(Handler, Output):
                 self.sock.send(txt)
             except (ConnectionResetError, BrokenPipeError) as ex:
                 time.sleep(5.0)
-                self.state.error = str(ex)
+                self.state.errors.append(str(ex))
                 self.stop()
         self.state.last = time.time()
         self.state.nrsend += 1
@@ -681,4 +685,3 @@ def pwd(event):
 
 
 Command.add(pwd)
-
