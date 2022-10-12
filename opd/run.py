@@ -185,6 +185,16 @@ class Handler(Callbacks):
     def say(self, channel, txt):
         self.raw(txt)
 
+    def scan(self, mod):
+        for _k, clz in inspect.getmembers(mod, inspect.isclass):
+            Class.add(clz)
+        for key, cmd in inspect.getmembers(mod, inspect.isfunction):
+            if key.startswith("cb"):
+                continue
+            names = cmd.__code__.co_varnames
+            if "event" in names:
+                self.add(cmd)
+
     def stop(self):
         self.stopped.set()
 
@@ -193,8 +203,8 @@ class Handler(Callbacks):
         launch(self.loop)
 
     def wait(self):
-        while self.stopped:
-            self.stopped.wait(1.0)
+        while 1:
+            time.sleep(1.0)
         
 
 class Shell(Handler):
@@ -219,17 +229,6 @@ def from_exception(exc, txt="", sep=" "):
     for frm in traceback.extract_tb(exc.__traceback__):
         result.append("%s:%s" % (os.sep.join(frm.filename.split(os.sep)[-2:]), frm.lineno))
     return "%s %s: %s" % (" ".join(result), name(exc), exc, )
-
-
-def scan(obj, mod):
-    for _k, clz in inspect.getmembers(mod, inspect.isclass):
-        Class.add(clz)
-    for key, cmd in inspect.getmembers(mod, inspect.isfunction):
-        if key.startswith("cb"):
-            continue
-        names = cmd.__code__.co_varnames
-        if "event" in names:
-            obj.add(cmd)
 
 
 def scandir(path, func):

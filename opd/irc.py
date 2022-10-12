@@ -310,7 +310,6 @@ class IRC(Handler, Output):
             self.state.errors.append(txt)
             nck = self.cfg.nick + "_" + str(random.randint(1,10))
             self.command("NICK", nck)
-        print(evt.txt)
         return evt
 
     def fileno(self):

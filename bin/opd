@@ -23,7 +23,7 @@ sys.path.insert(0, os.getcwd())
 
 from opd import Class, Default, Object, Wd
 from opd import edit, keys, launch, last, locked, printable, register, save
-from opd import Bus, Command, Event, Handler, Shell, command, scan, scandir
+from opd import Bus, Command, Event, Handler, Shell, command, scandir
 from opd import cmds, irc, rss
 
 from opd.irc import IRC
@@ -48,21 +48,21 @@ def daemon(silent=False):
         os._exit(0)
     os.setsid()
     os.umask(0)
+    sis = open("/dev/null", 'r')
+    os.dup2(sis.fileno(), sys.stdin.fileno())
     if silent:
-        sis = open("/dev/null", 'r')
         sos = open("/dev/null", 'a+')
         ses = open("/dev/null", 'a+')
-        os.dup2(sis.fileno(), sys.stdin.fileno())
         os.dup2(sos.fileno(), sys.stdout.fileno())
         os.dup2(ses.fileno(), sys.stderr.fileno())
 
 
 def main():
-    sys.argv[0] = "opd"
+    #sys.argv[0] = "opd"
     banner()
     daemon()
     fetcher.start()
-    scan(bot, cmds)
+    bot.scan(cmds)
     bot.start()
     bot.wait()
 
